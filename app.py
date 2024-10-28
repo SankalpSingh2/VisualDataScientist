@@ -99,7 +99,7 @@ def generate_data_and_plot(plot_type: str, num_points: str):
     return file_paths, file_paths
 
 
-def generate_description(ollama_url: str, model: str, user_prompt: str, file_paths: list):
+def generate_description(ollama_url: str, model: str, user_prompt: str, file_paths: list, temperature: float, top_k: int, top_p: float,):
     images = []
     try:
         for image_path in file_paths:
@@ -113,9 +113,9 @@ def generate_description(ollama_url: str, model: str, user_prompt: str, file_pat
 # test comment
     prompt = user_prompt
     options = {
-        'temperature': 1.0,
-        'top_k': 40,
-
+        'temperature': temperature,
+        'top_k': top_k,
+        'top_p': top_p,
         'stop': None,
         'num_ctx': 32768
     }
@@ -166,6 +166,14 @@ def main():
                 model_dropdown = gr.Dropdown(label="🧠 Ollama Model", choices=initial_models, value=initial_models[0] if initial_models else "", interactive=True)
                 plot_type_dropdown = gr.Dropdown(label="📊 Plot Type", choices=['scatter-plot', 'line-plot', 'bar-chart'], value='scatter-plot', interactive=True)
                 num_points = gr.Textbox(label="Number of points", value='', interactive=True)
+                # 'temperature': 1.0,
+                #         'top_k': 40,
+                #         'top_p': 1.0,
+                #         'stop': None,
+                #         'num_ctx': 32768
+                Temperature = gr.Slider(label="Temperature", value = '1', minimum=0, maximum=1, step=0.1, interactive=True)
+                TopK = gr.Slider(label="Top K", value='50', minimum=0, maximum=100, step=10, interactive=True)
+                TopP = gr.Slider(label="Top P", value='1', minimum=0, maximum=1, step=0.1, interactive=True)
                 user_prompt = gr.UploadButton("Click to upload a file")
                 user_prompt.upload(upload_file, user_prompt)
                 generate_data_button = gr.Button("Generate Data")
@@ -192,7 +200,7 @@ def main():
         generate_data_button.click(generate_data_and_plot, inputs=[plot_type_dropdown, num_points], outputs=[plot_gallery, image_path_state])
         # Update the button click event to use the modified generate_description function
         generate_description_button.click(generate_description,
-                                          inputs=[ollama_url, model_dropdown, pattern_prompt, image_path_state],
+                                          inputs=[ollama_url, model_dropdown, pattern_prompt, image_path_state, Temperature, TopK, TopP],
                                           outputs=[description_output], queue=True)
 
     if __name__ == "__main__":
